@@ -2,20 +2,27 @@
 require 'config.php';
 
 if(isset($_POST['add'])){
+    $name = $_POST['prod_name'];
+    $desc = $_POST['description'];
+    $cat  = $_POST['cat_id'];
+    $brand = $_POST['brand_id'];
 
-    $name = $_POST['name'];
-    $email = $_POST['email'];
-    $product = $_POST['product'];
-    $amount = $_POST['amount'];
+    // IMAGE HANDLING
+    $fileName = $_FILES['image']['name'];
+    $tempName = $_FILES['image']['tmp_name'];
+    $folder = "uploads/" . $fileName;
 
-    $stmt = $pdo -> prepare("INSERT INTO users (name, email) VALUE (?, ?)");
-    $stmt -> execute([$name, $email]);
+    // 1. Move the physical file to your 'uploads' folder
+    if (move_uploaded_file($tempName, $folder)) {
+        
+        // 2. Save the details to the 'products' table
+        $sql = "INSERT INTO products (prod_name, description, cat_id, brand_id, image_path) VALUES (?, ?, ?, ?, ?)";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([$name, $desc, $cat, $brand, $fileName]);
 
-    $users_id = $pdo -> lastInsertId();
-
-    $stmt2 = $pdo -> prepare("INSERT INTO orders (users_id, product, amount) VALUE (?, ?, ?)");
-    $stmt2 -> execute([$users_id, $product, $amount]);
-
-    echo "User and Order added successfully!";
+        echo "Product added and image uploaded!";
+    } else {
+        echo "Failed to upload image. Check if 'uploads' folder exists.";
+    }
 }
 ?>
